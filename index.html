@@ -1102,11 +1102,7 @@ function renderDashboard(ev) {
     <div class="actions-row">
       <button class="action-btn primary" onclick="saveFeedback()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-        Guardar retroalimentación
-      </button>
-      <button class="action-btn green" onclick="syncToGoogleSheets()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 12l3-3m-3 3l3 3"/></svg>
-        Enviar a Google Sheets
+        Guardar y enviar a Google Sheets
       </button>
       <button class="action-btn outline" onclick="exportSingle()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
@@ -1126,7 +1122,27 @@ async function saveFeedback() {
   const existing = state.history.findIndex(h => h.id === state.current.id);
   if (existing >= 0) state.history[existing] = state.current;
   await saveHistory();
-  toast('Guardado ✓');
+
+  // Auto-sync to Google Sheets if URL is configured
+  const url = await getGSheetsUrl();
+  if (url) {
+    toast('Guardando y enviando…');
+    const rows = flattenEvaluation(state.current);
+    try {
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'append', rows }),
+      });
+      toast('✓ Guardado y enviado a Google Sheets');
+    } catch (e) {
+      console.error(e);
+      toast('Guardado local ✓ (error al enviar a Sheets)');
+    }
+  } else {
+    toast('Guardado ✓ (configura Google Sheets con ⚙ para sincronizar)');
+  }
 }
 
 // ----- HISTORY -----
