@@ -73,6 +73,20 @@
   .start-btn:active { transform: scale(0.99); }
   .start-btn svg { width: 18px; height: 18px; }
 
+  /* ========== PROVEEDORES SELECTOR ========== */
+  .prov-section { margin-top: 22px; padding: 18px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+  .prov-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .prov-label { font-size: 13px; color: var(--ink); letter-spacing: 0.02em; font-weight: 600; }
+  .prov-hint { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .prov-counter { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; padding: 6px 12px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 6px; }
+  .prov-counter.valid { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+  .prov-counter.invalid { background: var(--yellow-soft); border-color: var(--yellow); color: var(--yellow); }
+  .prov-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .prov-chip { padding: 8px 12px; border: 1.5px solid var(--line); background: var(--bg-card); border-radius: 18px; cursor: pointer; font: inherit; font-size: 12px; color: var(--ink); transition: all .12s; }
+  .prov-chip:hover { border-color: var(--ink-soft); }
+  .prov-chip.selected { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 500; }
+  .prov-chip.selected:hover { background: #a64f1a; border-color: #a64f1a; }
+
   .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
   @media (max-width: 580px) { .info-grid { grid-template-columns: 1fr; } }
   .info-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
@@ -281,7 +295,7 @@
   <div class="brand">
     <div class="brand-mark">E</div>
     <div>
-      <div class="brand-name">Sistema EPV <span style="font-size:10px;font-weight:400;opacity:.5;letter-spacing:0">v1.2</span></div>
+      <div class="brand-name">Sistema EPV <span style="font-size:10px;font-weight:400;opacity:.5;letter-spacing:0">v1.3</span></div>
       <div class="brand-sub">Evaluación · Personal de Ventas</div>
     </div>
   </div>
@@ -322,13 +336,58 @@ const PASOS_9 = [
   { code: 'P9', name: 'Cierre venta', desc: 'Confirma pedido, fecha de entrega, próximo contacto, despedida' },
 ];
 
-const PORTAFOLIO = [
-  { code: 'PA1', name: 'ALICORP' },
-  { code: 'PA2', name: 'JW' },
-  { code: 'PA3', name: 'CONFITECA' },
-  { code: 'PA4', name: 'DISPACIFIC' },
-  { code: 'PA5', name: 'SOFTYS' },
+// Catálogo completo de proveedores disponibles
+const PROVEEDORES_CATALOG = [
+  'ALICORP ECUADOR S.A',
+  'JABONERIA WILSON S.A.',
+  'CONFITECA C.A.',
+  'SOFTYS ECUADOR S.A',
+  'MONDELEZ DEL ECUADOR',
+  'FAMILIA SANCELA',
+  'PROESA',
+  'MONTERREY AZUCARERA LOJANA C.A',
+  'MARBELIZE S.A',
+  'FOSFORERA ECUATORIANA S.A',
+  'AGRIPAC S.A.',
+  'IMPERIAL S.A.',
+  'INDUSTRIAS EDMUNDO ROMULO BONILLA',
+  'ECUATORIANA DE ALIMENTOS S.A',
+  'VITA ALIMENTOS',
+  'FINI GOLOSINAS ECUADOR SAS',
+  'REYLACTEOS S.A.',
+  'FEILO SYLVANIA N V',
+  'PROALCO',
+  'ORIENTAL INDUSTRIA ALIMENTICIA',
+  'MORA PACHECO XAVIER MAURICIO',
+  '17DOCE S.A.',
 ];
+
+// Selección por defecto inicial (los originales)
+const PROVEEDORES_DEFAULT = ['ALICORP ECUADOR S.A', 'JABONERIA WILSON S.A.', 'CONFITECA C.A.', 'MONDELEZ DEL ECUADOR', 'SOFTYS ECUADOR S.A'];
+
+const MIN_PROVEEDORES = 3;
+const MAX_PROVEEDORES = 5;
+const PROV_PREF_KEY = 'epv-proveedores-pref-v1';
+
+// Build PORTAFOLIO dynamically from selected providers for an evaluation
+function buildPortafolio(selectedProviders) {
+  return (selectedProviders || PROVEEDORES_DEFAULT).map((name, i) => ({
+    code: 'PA' + (i + 1),
+    name: name,
+  }));
+}
+
+function getCurrentPortafolio() {
+  return getPortafolioFor(state.current);
+}
+
+// Get portafolio for any evaluation (supports old evaluations without proveedores field)
+function getPortafolioFor(ev) {
+  if (ev && ev.proveedores && ev.proveedores.length) {
+    return buildPortafolio(ev.proveedores);
+  }
+  return buildPortafolio(PROVEEDORES_DEFAULT);
+}
 
 const HABILIDADES = [
   { code: 'H1', name: 'Argumentación', desc: 'Argumenta con beneficios al tendero, no solo características del producto' },
@@ -388,12 +447,27 @@ async function saveHistory() {
 }
 
 function newEvaluation() {
+  // Load last used providers from localStorage as default
+  let lastProveedores = PROVEEDORES_DEFAULT;
+  try {
+    const stored = localStorage.getItem(PROV_PREF_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length >= MIN_PROVEEDORES) {
+        // Filter only those still in the catalog
+        const valid = parsed.filter(p => PROVEEDORES_CATALOG.includes(p));
+        if (valid.length >= MIN_PROVEEDORES) lastProveedores = valid;
+      }
+    }
+  } catch {}
+
   return {
     id: 'eval_' + Date.now(),
     createdAt: new Date().toISOString(),
     info: { vendedor: '', evaluador: '', ruta: '', periodo: '', fecha: new Date().toISOString().slice(0,10), visita: '' },
-    s1: {},    // { '1.1': {score, obs}, ... }
-    stores: [], // [{ id, name, hora, scores: {P1...H3}, obs }]
+    proveedores: [...lastProveedores],
+    s1: {},
+    stores: [],
     s3: {},
     feedback: { fortalezas: '', criticas: '', acciones: '', plan: '' },
     completedAt: null,
@@ -409,14 +483,16 @@ function avg(arr) {
   return vals.reduce((a,b) => a + Number(b), 0) / vals.length;
 }
 
-function computeStoreAvg(store) {
-  const all = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].map(i => store.scores[i.code]);
+function computeStoreAvg(store, ev) {
+  const portafolio = ev ? getPortafolioFor(ev) : getCurrentPortafolio();
+  const all = [...PASOS_9, ...portafolio, ...HABILIDADES].map(i => store.scores[i.code]);
   return avg(all);
 }
 
 function computeSection2(ev) {
   if (!ev.stores.length) return null;
-  const allScores = ev.stores.flatMap(s => [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].map(i => s.scores[i.code]));
+  const portafolio = getPortafolioFor(ev);
+  const allScores = ev.stores.flatMap(s => [...PASOS_9, ...portafolio, ...HABILIDADES].map(i => s.scores[i.code]));
   return avg(allScores);
 }
 
@@ -518,8 +594,9 @@ function flattenEvaluation(ev) {
     rows.push({ ...common, seccion: 'Pre-Ruta', codigo: i.code, criterio: i.name, cliente: '', puntaje: ev.s1[i.code]?.score || '', observacion: ev.s1[i.code]?.obs || '' });
   });
   // En-Ruta rows (one per item per store)
+  const portafolio = getPortafolioFor(ev);
   ev.stores.forEach(st => {
-    [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].forEach(it => {
+    [...PASOS_9, ...portafolio, ...HABILIDADES].forEach(it => {
       rows.push({ ...common, seccion: 'En-Ruta', codigo: it.code, criterio: it.name, cliente: st.name, puntaje: st.scores[it.code] || '', observacion: st.obs || '' });
     });
   });
@@ -657,8 +734,21 @@ function startEvaluation() {
     toast('Vendedor y evaluador son obligatorios');
     return;
   }
+  const selectedProvs = getSelectedProveedores();
+  if (selectedProvs.length < MIN_PROVEEDORES) {
+    toast(`Selecciona al menos ${MIN_PROVEEDORES} proveedores`);
+    return;
+  }
+  if (selectedProvs.length > MAX_PROVEEDORES) {
+    toast(`Máximo ${MAX_PROVEEDORES} proveedores`);
+    return;
+  }
+  // Save preference for next time
+  try { localStorage.setItem(PROV_PREF_KEY, JSON.stringify(selectedProvs)); } catch {}
+
   state.current = newEvaluation();
   state.current.info = info;
+  state.current.proveedores = selectedProvs;
   state.view = 'step1';
   renderStep1();
 }
@@ -702,12 +792,76 @@ function renderHome() {
         <div class="field"><label>Fecha</label><input id="in-fecha" type="date" value="${today}" /></div>
         <div class="field"><label>Visita N°</label><input id="in-visita" placeholder="Número de acompañamiento" /></div>
       </div>
+
+      <div class="prov-section">
+        <div class="prov-header">
+          <div>
+            <label class="prov-label">Proveedores a reforzar en esta visita *</label>
+            <div class="prov-hint">Selecciona entre ${MIN_PROVEEDORES} y ${MAX_PROVEEDORES} proveedores</div>
+          </div>
+          <div class="prov-counter" id="prov-counter">0 / ${MAX_PROVEEDORES}</div>
+        </div>
+        <div class="prov-chips" id="prov-chips">
+          ${PROVEEDORES_CATALOG.map(prov => `
+            <button type="button" class="prov-chip" data-prov="${esc(prov)}" onclick="toggleProveedor(this)">
+              ${esc(prov)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
       <button class="start-btn" onclick="startEvaluation()">
         Iniciar evaluación
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
     </div>
   `;
+
+  // Initialize provider selection from last used (default fallback)
+  let initialProvs = PROVEEDORES_DEFAULT;
+  try {
+    const stored = localStorage.getItem(PROV_PREF_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length >= MIN_PROVEEDORES) {
+        const valid = parsed.filter(p => PROVEEDORES_CATALOG.includes(p));
+        if (valid.length >= MIN_PROVEEDORES) initialProvs = valid;
+      }
+    }
+  } catch {}
+
+  document.querySelectorAll('.prov-chip').forEach(chip => {
+    if (initialProvs.includes(chip.dataset.prov)) chip.classList.add('selected');
+  });
+  updateProvCounter();
+}
+
+function toggleProveedor(btn) {
+  const selected = document.querySelectorAll('.prov-chip.selected');
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+  } else {
+    if (selected.length >= MAX_PROVEEDORES) {
+      toast(`Máximo ${MAX_PROVEEDORES} proveedores`);
+      return;
+    }
+    btn.classList.add('selected');
+  }
+  updateProvCounter();
+}
+
+function updateProvCounter() {
+  const count = document.querySelectorAll('.prov-chip.selected').length;
+  const counter = document.getElementById('prov-counter');
+  if (counter) {
+    counter.textContent = `${count} / ${MAX_PROVEEDORES}`;
+    counter.classList.toggle('valid', count >= MIN_PROVEEDORES && count <= MAX_PROVEEDORES);
+    counter.classList.toggle('invalid', count < MIN_PROVEEDORES);
+  }
+}
+
+function getSelectedProveedores() {
+  return Array.from(document.querySelectorAll('.prov-chip.selected')).map(c => c.dataset.prov);
 }
 
 // ----- STEPPER -----
@@ -819,22 +973,23 @@ function renderStep2() {
 
     <div class="legend">
       <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>9 pasos de la visita</div>
-      <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>Portafolio aplicado (5)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>Portafolio aplicado (${ev.proveedores ? ev.proveedores.length : 5})</div>
       <div class="legend-item"><span class="legend-dot" style="background:#6b3d8c"></span>Habilidades blandas (3)</div>
     </div>
 
     <div class="store-list">
       ${ev.stores.map((s, idx) => {
-        const a = computeStoreAvg(s);
-        const filled = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].filter(i => s.scores[i.code] != null).length;
-        const complete = filled === 17;
+        const totalItems = 9 + (ev.proveedores ? ev.proveedores.length : 5) + 3;
+        const a = computeStoreAvg(s, ev);
+        const filled = [...PASOS_9, ...getPortafolioFor(ev), ...HABILIDADES].filter(i => s.scores[i.code] != null).length;
+        const complete = filled === totalItems;
         return `
           <div class="store-card ${complete ? 'complete' : ''}" onclick="openStore(${idx})">
             <div class="store-info">
               <div class="store-num">${idx + 1}</div>
               <div class="store-text">
                 <div class="store-name">${esc(s.name) || 'Tienda ' + (idx+1)}</div>
-                <div class="store-meta">${s.hora ? esc(s.hora) + ' · ' : ''}${filled}/17 ítems${complete ? ' · Completa' : ''}</div>
+                <div class="store-meta">${s.hora ? esc(s.hora) + ' · ' : ''}${filled}/${totalItems} ítems${complete ? ' · Completa' : ''}</div>
               </div>
             </div>
             <div class="store-score">${a != null ? a.toFixed(2) : '—'}</div>
@@ -895,7 +1050,7 @@ function openStoreModal() {
     ${PASOS_9.map(p => storeQ(idx, p)).join('')}
 
     <div class="block-title yellow">🟡 Portafolio aplicado · ¿ofreció estos proveedores?</div>
-    ${PORTAFOLIO.map(p => storeQ(idx, p, 'portafolio')).join('')}
+    ${getCurrentPortafolio().map(p => storeQ(idx, p, 'portafolio')).join('')}
 
     <div class="block-title purple">🟣 Habilidades blandas</div>
     ${HABILIDADES.map(p => storeQ(idx, p)).join('')}
@@ -1026,8 +1181,9 @@ function renderDashboard(ev) {
   const badge = scoreBadge(final);
 
   // Dimension averages
+  const evPortafolio = getPortafolioFor(ev);
   const pasosScores = ev.stores.flatMap(st => PASOS_9.map(p => st.scores[p.code]));
-  const portScores = ev.stores.flatMap(st => PORTAFOLIO.map(p => st.scores[p.code]));
+  const portScores = ev.stores.flatMap(st => evPortafolio.map(p => st.scores[p.code]));
   const habScores = ev.stores.flatMap(st => HABILIDADES.map(p => st.scores[p.code]));
   const pasosAvg = avg(pasosScores);
   const portAvg = avg(portScores);
@@ -1084,7 +1240,7 @@ function renderDashboard(ev) {
       <div class="diag-grid">
         ${[
           { name: '🔵 Ejecución (9 pasos)', avg: pasosAvg, sub: 'P1 a P9 del modelo de visita' },
-          { name: '🟡 Portafolio Aplicado', avg: portAvg, sub: '5 proveedores top: ALICORP, JW, CONFITECA, DISPACIFIC, SOFTYS' },
+          { name: '🟡 Portafolio Aplicado', avg: portAvg, sub: evPortafolio.map(p => p.name).join(' · ') },
           { name: '🟣 Habilidades Blandas', avg: habAvg, sub: 'Argumentación, resolución, negociación' },
         ].map(d => {
           const lv = avgLevel(d.avg);
@@ -1297,11 +1453,13 @@ function buildEvalSheets(ev) {
   SECTION_1.forEach(i => pre.push([i.code, i.name, ev.s1[i.code]?.score || '', ev.s1[i.code]?.obs || '']));
 
   // Sheet 3: Por Cliente (matrix)
-  const allItems = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES];
-  const header = ['#', 'Cliente', 'Hora', ...allItems.map(i => i.code), 'PROM', 'Observaciones'];
-  const porCliente = [header];
+  const evPortafolio = getPortafolioFor(ev);
+  const allItems = [...PASOS_9, ...evPortafolio, ...HABILIDADES];
+  // Build header with provider names instead of just PA codes
+  const headerCodes = ['#', 'Cliente', 'Hora', ...PASOS_9.map(p => p.code), ...evPortafolio.map(p => p.name), ...HABILIDADES.map(h => h.code), 'PROM', 'Observaciones'];
+  const porCliente = [headerCodes];
   ev.stores.forEach((s, i) => {
-    const row = [i + 1, s.name, s.hora, ...allItems.map(it => s.scores[it.code] || ''), computeStoreAvg(s)?.toFixed(2) || '', s.obs || ''];
+    const row = [i + 1, s.name, s.hora, ...allItems.map(it => s.scores[it.code] || ''), computeStoreAvg(s, ev)?.toFixed(2) || '', s.obs || ''];
     porCliente.push(row);
   });
   // Averages row
@@ -1362,7 +1520,7 @@ function exportAll() {
   state.history.forEach(ev => {
     SECTION_1.forEach(i => detalle.push([ev.info.fecha, ev.info.vendedor, 'Pre-Ruta', i.code, i.name, '', ev.s1[i.code]?.score || '', ev.s1[i.code]?.obs || '']));
     ev.stores.forEach(st => {
-      [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].forEach(it => {
+      [...PASOS_9, ...getPortafolioFor(ev), ...HABILIDADES].forEach(it => {
         detalle.push([ev.info.fecha, ev.info.vendedor, 'En-Ruta', it.code, it.name, st.name, st.scores[it.code] || '', st.obs || '']);
       });
     });
