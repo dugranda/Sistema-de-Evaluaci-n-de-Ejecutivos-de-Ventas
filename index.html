@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPV · Evaluación de Personal de Ventas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,800&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --bg-card: #ffffff;
+    --ink: #1a1816;
+    --ink-soft: #5a544c;
+    --line: #e4dfd5;
+    --line-soft: #ede8df;
+    --blue: #1e4d8c;
+    --blue-soft: #e6eef9;
+    --orange: #c25d1f;
+    --orange-soft: #fae9da;
+    --green: #2d6a4f;
+    --green-soft: #d8ebe0;
+    --yellow: #c89020;
+    --yellow-soft: #fbf0d8;
+    --red: #a8331e;
+    --red-soft: #f4d9d2;
+    --shadow-sm: 0 1px 2px rgba(26,24,22,.06);
+    --shadow: 0 4px 16px rgba(26,24,22,.08);
+    --shadow-lg: 0 12px 40px rgba(26,24,22,.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Geist', -apple-system, sans-serif; font-size: 15px; line-height: 1.5; min-height: 100vh; }
+  .display { font-family: 'Fraunces', Georgia, serif; font-weight: 600; letter-spacing: -0.02em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ========== APP SHELL ========== */
+  .app { max-width: 880px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  header.topbar { background: var(--ink); color: #f5f3ee; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 32px; height: 32px; background: var(--orange); border-radius: 6px; display: grid; place-items: center; font-family: 'Fraunces', serif; font-weight: 800; color: #fff; font-size: 18px; }
+  .brand-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 11px; color: #a8a39b; letter-spacing: 0.08em; text-transform: uppercase; }
+  .topbar-actions { display: flex; gap: 8px; }
+  .top-btn { background: rgba(255,255,255,.08); color: #f5f3ee; border: none; padding: 8px 14px; border-radius: 6px; font: inherit; font-size: 13px; cursor: pointer; transition: background .15s; }
+  .top-btn:hover { background: rgba(255,255,255,.15); }
+  .top-btn.active { background: var(--orange); color: #fff; }
+
+  main { flex: 1; padding: 24px 22px 80px; }
+
+  /* ========== HOME ========== */
+  .hero { padding: 28px 0 16px; }
+  .hero-eyebrow { color: var(--orange); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+  .hero h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.02; margin-bottom: 16px; }
+  .hero h1 em { font-style: italic; color: var(--orange); }
+  .hero p { color: var(--ink-soft); font-size: 16px; max-width: 540px; }
+
+  .start-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-top: 28px; box-shadow: var(--shadow-sm); }
+  .start-card h2 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 18px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 500; }
+  .field input { padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 15px; background: var(--bg); color: var(--ink); transition: border-color .15s, background .15s; }
+  .field input:focus { outline: none; border-color: var(--ink); background: #fff; }
+
+  .start-btn { margin-top: 20px; width: 100%; padding: 16px; background: var(--ink); color: #f5f3ee; border: none; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 500; cursor: pointer; transition: transform .15s, background .15s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .start-btn:hover { background: var(--orange); }
+  .start-btn:active { transform: scale(0.99); }
+  .start-btn svg { width: 18px; height: 18px; }
+
+  .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+  @media (max-width: 580px) { .info-grid { grid-template-columns: 1fr; } }
+  .info-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .info-card .num { font-family: 'Fraunces', serif; font-weight: 800; font-size: 32px; line-height: 1; margin-bottom: 6px; }
+  .info-card .num.blue { color: var(--blue); }
+  .info-card .num.orange { color: var(--orange); }
+  .info-card .num.green { color: var(--green); }
+  .info-card .label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  .info-card .desc { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ========== STEPPER ========== */
+  .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 26px; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-sm); }
+  .step { display: flex; align-items: center; gap: 10px; flex: 1; color: var(--ink-soft); font-size: 13px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--line-soft); display: grid; place-items: center; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+  .step.active { color: var(--ink); font-weight: 500; }
+  .step.active .step-num { background: var(--ink); color: var(--bg); }
+  .step.done .step-num { background: var(--green); color: #fff; }
+  .step-sep { width: 24px; height: 1px; background: var(--line); margin: 0 4px; flex-shrink: 0; }
+  @media (max-width: 580px) {
+    .step-label { display: none; }
+    .step { flex: 0; }
+    .stepper { justify-content: center; gap: 8px; }
+  }
+
+  /* ========== SECTION HEADERS ========== */
+  .section-banner { padding: 22px 24px; border-radius: 14px; margin-bottom: 24px; position: relative; overflow: hidden; }
+  .section-banner.blue { background: linear-gradient(135deg, var(--blue-soft), #f3f7fc); border: 1px solid #c9d8ed; }
+  .section-banner.orange { background: linear-gradient(135deg, var(--orange-soft), #fdf5ed); border: 1px solid #f0d4ba; }
+  .section-banner.green { background: linear-gradient(135deg, var(--green-soft), #f0f6f1); border: 1px solid #bcd9c5; }
+  .section-banner .tag { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+  .section-banner.blue .tag { color: var(--blue); }
+  .section-banner.orange .tag { color: var(--orange); }
+  .section-banner.green .tag { color: var(--green); }
+  .section-banner h2 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .section-banner .meta { font-size: 13px; color: var(--ink-soft); }
+
+  /* ========== QUESTIONS ========== */
+  .question { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow-sm); transition: border-color .2s, transform .15s; }
+  .question.answered { border-color: var(--line); }
+  .q-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .q-code { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px; color: var(--ink-soft); padding: 4px 8px; background: var(--bg); border-radius: 5px; flex-shrink: 0; letter-spacing: 0.04em; }
+  .q-body h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+  .q-body p { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .scale { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .scale-btn { padding: 14px 8px; border: 1.5px solid var(--line); background: var(--bg); border-radius: 9px; cursor: pointer; transition: all .12s; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .scale-btn:hover { border-color: var(--ink-soft); }
+  .scale-btn .scale-num { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; line-height: 1; }
+  .scale-btn .scale-lbl { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; }
+  .scale-btn.selected { color: #fff; }
+  .scale-btn.selected .scale-lbl { color: rgba(255,255,255,.85); }
+  .scale-btn.s1.selected { background: var(--red); border-color: var(--red); }
+  .scale-btn.s2.selected { background: var(--yellow); border-color: var(--yellow); }
+  .scale-btn.s3.selected { background: var(--blue); border-color: var(--blue); }
+  .scale-btn.s4.selected { background: var(--green); border-color: var(--green); }
+
+  .obs-input { width: 100%; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 13px; background: var(--bg); resize: vertical; min-height: 38px; }
+  .obs-input:focus { outline: none; border-color: var(--ink); background: #fff; }
+
+  /* ========== EN-RUTA ========== */
+  .store-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .store-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .store-card:hover { border-color: var(--ink-soft); }
+  .store-card.complete { border-color: var(--green); background: linear-gradient(to right, var(--green-soft), #fff 60%); }
+  .store-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .store-num { width: 32px; height: 32px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--line); display: grid; place-items: center; font-family: 'Fraunces', serif; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+  .store-card.complete .store-num { background: var(--green); border-color: var(--green); color: #fff; }
+  .store-text { min-width: 0; }
+  .store-name { font-weight: 500; font-size: 15px; }
+  .store-meta { font-size: 12px; color: var(--ink-soft); }
+  .store-score { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ink-soft); }
+  .store-card.complete .store-score { color: var(--green); font-weight: 600; }
+  .add-store-btn { width: 100%; padding: 14px; background: transparent; border: 1.5px dashed var(--line); border-radius: 10px; color: var(--ink-soft); cursor: pointer; font: inherit; font-size: 14px; transition: all .15s; }
+  .add-store-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--bg-card); }
+
+  /* ========== STORE EVAL MODAL ========== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,24,22,.4); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: var(--bg); border-radius: 16px 16px 0 0; max-width: 880px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 22px; transform: translateY(20px); transition: transform .3s; }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  @media (min-width: 720px) {
+    .modal-overlay { align-items: center; padding: 20px; }
+    .modal { border-radius: 16px; }
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .modal-head h2 { font-family: 'Fraunces', serif; font-size: 22px; }
+  .close-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--line-soft); border: none; cursor: pointer; display: grid; place-items: center; font-size: 18px; color: var(--ink); }
+  .modal-head input { padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 15px; background: var(--bg-card); }
+
+  .block-title { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin: 20px 0 12px; padding-left: 8px; border-left: 3px solid currentColor; }
+  .block-title.blue { color: var(--blue); }
+  .block-title.yellow { color: var(--yellow); }
+  .block-title.purple { color: #6b3d8c; }
+
+  /* ========== NAV ========== */
+  .nav-row { display: flex; gap: 10px; margin-top: 24px; }
+  .nav-btn { flex: 1; padding: 14px; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; border: 1.5px solid; transition: all .15s; }
+  .nav-btn.back { background: transparent; border-color: var(--line); color: var(--ink); }
+  .nav-btn.back:hover { border-color: var(--ink); }
+  .nav-btn.next { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .nav-btn.next:hover { background: var(--orange); border-color: var(--orange); }
+  .nav-btn.next:disabled { background: var(--line); border-color: var(--line); color: var(--ink-soft); cursor: not-allowed; }
+  .nav-btn.danger { background: transparent; border-color: var(--red); color: var(--red); flex: 0 0 auto; padding: 14px 18px; }
+  .nav-btn.danger:hover { background: var(--red); color: #fff; }
+
+  /* ========== DASHBOARD ========== */
+  .dash-hero { background: var(--ink); color: var(--bg); border-radius: 16px; padding: 28px; margin-bottom: 18px; }
+  .dash-hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .dash-hero-top .label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(245,243,238,.6); font-weight: 600; }
+  .dash-hero-top .badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; }
+  .badge.excelente { background: var(--green); color: #fff; }
+  .badge.bueno { background: var(--blue); color: #fff; }
+  .badge.aceptable { background: var(--yellow); color: #fff; }
+  .badge.deficiente { background: var(--red); color: #fff; }
+  .score-big { font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(80px, 16vw, 130px); line-height: 0.9; letter-spacing: -0.04em; }
+  .score-big sup { font-size: 0.3em; font-weight: 400; opacity: 0.5; vertical-align: super; margin-left: 8px; }
+  .dash-hero-meta { display: flex; gap: 24px; margin-top: 14px; font-size: 13px; color: rgba(245,243,238,.7); flex-wrap: wrap; }
+  .dash-hero-meta strong { color: var(--bg); font-weight: 500; }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 720px) { .dash-grid { grid-template-columns: 1fr; } }
+  .dash-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .dash-card .head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .dash-card .head .name { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .dash-card .head .weight { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-soft); padding: 3px 7px; background: var(--bg); border-radius: 4px; }
+  .dash-card .val { font-family: 'Fraunces', serif; font-weight: 600; font-size: 38px; line-height: 1; margin-bottom: 4px; }
+  .dash-card .out { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
+  .dash-card .bar { height: 8px; background: var(--line-soft); border-radius: 4px; overflow: hidden; }
+  .dash-card .bar > div { height: 100%; transition: width .6s; }
+  .dash-card.s1 .bar > div { background: var(--blue); }
+  .dash-card.s2 .bar > div { background: var(--orange); }
+  .dash-card.s3 .bar > div { background: var(--green); }
+
+  .diag-section { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+  .diag-section h3 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 14px; }
+  .diag-grid { display: grid; gap: 10px; }
+  .diag-row { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; padding: 12px 14px; background: var(--bg); border-radius: 8px; }
+  .diag-row .lbl { font-size: 14px; font-weight: 500; }
+  .diag-row .lbl small { display: block; font-size: 11px; color: var(--ink-soft); font-weight: 400; margin-top: 2px; }
+  .diag-row .val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; }
+  .diag-row .tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .tag-exc { background: var(--green-soft); color: var(--green); }
+  .tag-bue { background: var(--blue-soft); color: var(--blue); }
+  .tag-acp { background: var(--yellow-soft); color: var(--yellow); }
+  .tag-def { background: var(--red-soft); color: var(--red); }
+
+  .pasos-chart { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; margin-top: 14px; }
+  @media (max-width: 580px) { .pasos-chart { grid-template-columns: repeat(3, 1fr); } }
+  .paso-bar { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; background: var(--bg); border-radius: 7px; }
+  .paso-bar-fill { width: 100%; height: 80px; display: flex; align-items: flex-end; border-radius: 5px; overflow: hidden; background: var(--line-soft); }
+  .paso-bar-fill > div { width: 100%; transition: height .6s; }
+  .paso-bar-fill.lv1 > div { background: var(--red); height: 25%; }
+  .paso-bar-fill.lv2 > div { background: var(--yellow); height: 50%; }
+  .paso-bar-fill.lv3 > div { background: var(--blue); height: 75%; }
+  .paso-bar-fill.lv4 > div { background: var(--green); height: 100%; }
+  .paso-bar-lbl { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+  .paso-bar-name { font-size: 10px; color: var(--ink-soft); text-align: center; line-height: 1.2; min-height: 24px; display: flex; align-items: center; justify-content: center; padding: 0 2px; }
+  .paso-bar-val { font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+
+  .feedback-section { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+  .feedback-section h3 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 14px; }
+  .fb-block { margin-bottom: 14px; }
+  .fb-block label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .fb-block textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 14px; background: var(--bg); resize: vertical; min-height: 64px; }
+  .fb-block textarea:focus { outline: none; border-color: var(--ink); background: #fff; }
+
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .action-btn { flex: 1; min-width: 140px; padding: 14px 18px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border: 1.5px solid; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; }
+  .action-btn svg { width: 16px; height: 16px; }
+  .action-btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .action-btn.primary:hover { background: var(--orange); border-color: var(--orange); }
+  .action-btn.outline { background: var(--bg-card); color: var(--ink); border-color: var(--line); }
+  .action-btn.outline:hover { border-color: var(--ink); }
+  .action-btn.green { background: var(--green); color: #fff; border-color: var(--green); }
+  .action-btn.green:hover { background: #245a42; }
+
+  /* ========== HISTORY ========== */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .hist-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: auto 1fr auto auto; gap: 16px; align-items: center; }
+  @media (max-width: 580px) { .hist-card { grid-template-columns: 1fr; gap: 8px; } }
+  .hist-score { font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; line-height: 1; padding: 8px 14px; background: var(--bg); border-radius: 8px; min-width: 80px; text-align: center; }
+  .hist-info .name { font-weight: 500; font-size: 15px; }
+  .hist-info .meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .hist-actions { display: flex; gap: 6px; }
+  .hist-btn { width: 36px; height: 36px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); cursor: pointer; display: grid; place-items: center; font-size: 14px; transition: all .15s; }
+  .hist-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .hist-btn.danger:hover { background: var(--red); border-color: var(--red); }
+
+  .empty { text-align: center; padding: 60px 20px; color: var(--ink-soft); }
+  .empty .display { font-size: 24px; margin-bottom: 8px; color: var(--ink); }
+
+  /* ========== UTILITIES ========== */
+  .hidden { display: none !important; }
+  .progress-bar { height: 4px; background: var(--line-soft); border-radius: 2px; margin-bottom: 18px; overflow: hidden; }
+  .progress-bar > div { height: 100%; background: var(--orange); transition: width .3s; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 16px; background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 18px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 8px; font-size: 14px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 200; box-shadow: var(--shadow-lg); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">E</div>
+    <div>
+      <div class="brand-name">Sistema EPV</div>
+      <div class="brand-sub">Evaluación · Personal de Ventas</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="top-btn" id="navHome" onclick="goHome()">Inicio</button>
+    <button class="top-btn" id="navHist" onclick="goHistory()">Historial</button>
+    <button class="top-btn" title="Configurar Google Sheets" onclick="changeGSheetsUrl()">⚙</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+</div>
+
+<div class="modal-overlay" id="modal"><div class="modal" id="modalContent"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  DATA MODEL
+// ============================================================
+const SECTION_1 = [
+  { code: '1.1', name: 'Ruta Estructurada', desc: 'Orden lógico de visitas · Secuencia de 60 clientes planificada · No improvisa stops', weight: 3.75 },
+  { code: '1.2', name: 'Materiales Completos', desc: 'Lleva: catálogo · material POP · lista de promociones · tablet y recibos', weight: 3.75 },
+  { code: '1.3', name: 'Información Previa', desc: 'Conoce saldo de cartera por cliente · Revisó retornos pendientes · Lleva meta del día', weight: 3.75 },
+  { code: '1.4', name: 'Objetivo del Día', desc: 'Tiene metas numéricas claras ($, unidades, clientes) · Sabe SKU foco · Define riesgo a revisar', weight: 3.75 },
+];
+
+const PASOS_9 = [
+  { code: 'P1', name: 'Preparar visita', desc: 'Revisa cartera, historial y objetivo antes de entrar al PDV' },
+  { code: 'P2', name: 'Publicidad externa', desc: 'Observa y aprovecha material POP visible desde la calle' },
+  { code: 'P3', name: 'Apertura profesional', desc: 'Saludo, contacto visual, presentación clara del propósito de la visita' },
+  { code: 'P4', name: 'Cobranza', desc: 'Gestiona saldos pendientes y retornos al inicio de la visita' },
+  { code: 'P5', name: 'Ejecución PDV', desc: 'Acomoda producto, verifica exhibición, rota inventario en góndola' },
+  { code: 'P6', name: 'Detección necesidades', desc: 'Hace preguntas abiertas, escucha al tendero, identifica oportunidades' },
+  { code: 'P7', name: 'Presentación pedido', desc: 'Sugiere mix basado en historial y rotación · ofrece SKU foco' },
+  { code: 'P8', name: 'Promo / nuevos SKU', desc: 'Comunica promociones vigentes y novedades de portafolio' },
+  { code: 'P9', name: 'Cierre venta', desc: 'Confirma pedido, fecha de entrega, próximo contacto, despedida' },
+];
+
+const PORTAFOLIO = [
+  { code: 'PA1', name: 'ALICORP' },
+  { code: 'PA2', name: 'JW' },
+  { code: 'PA3', name: 'CONFITECA' },
+  { code: 'PA4', name: 'DISPACIFIC' },
+  { code: 'PA5', name: 'SOFTYS' },
+];
+
+const HABILIDADES = [
+  { code: 'H1', name: 'Argumentación', desc: 'Argumenta con beneficios al tendero, no solo características del producto' },
+  { code: 'H2', name: 'Resolución problemas', desc: 'Resuelve reclamos con calma, registra y compromete solución' },
+  { code: 'H3', name: 'Negociación / objeciones', desc: 'Maneja objeciones con seguridad sin ceder margen innecesariamente' },
+];
+
+const SECTION_3 = [
+  { code: '3.1', name: 'Puntualidad y Cumplimiento de Horario', desc: 'Ingresa a la hora · Respeta horario de almuerzo · Cierra ruta en el tiempo definido', weight: 5.0 },
+  { code: '3.2', name: 'Cumplimiento de Visitas', desc: 'Realiza las 60 visitas planificadas · No omite clientes · No improvisa paradas', weight: 5.0 },
+  { code: '3.3', name: 'Manejo del Tiempo por Cliente', desc: 'Optimiza tiempo en cada visita · Mantiene secuencia · No se dispersa', weight: 5.0 },
+  { code: '3.4', name: 'Cumplimiento de Procesos', desc: 'Completa registros y reportes · Sigue protocolos · Entrega información a tiempo', weight: 5.0 },
+];
+
+const SCALE_LABELS = { 1: 'Deficiente', 2: 'Aceptable', 3: 'Bueno', 4: 'Excelente' };
+
+// ============================================================
+//  STATE
+// ============================================================
+let state = {
+  view: 'home',  // home | step1 | step2 | step3 | dashboard | history
+  current: null, // active evaluation
+  history: [],
+  editingStore: null,
+};
+
+const STORAGE_KEY = 'epv-history-v1';
+const SHARED = true;
+
+async function loadHistory() {
+  try {
+    const r = await window.storage.get(STORAGE_KEY, SHARED);
+    state.history = r ? JSON.parse(r.value) : [];
+  } catch { state.history = []; }
+}
+
+async function saveHistory() {
+  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state.history), SHARED); }
+  catch (e) { console.error('Save failed', e); }
+}
+
+function newEvaluation() {
+  return {
+    id: 'eval_' + Date.now(),
+    createdAt: new Date().toISOString(),
+    info: { vendedor: '', evaluador: '', ruta: '', periodo: '', fecha: new Date().toISOString().slice(0,10), visita: '' },
+    s1: {},    // { '1.1': {score, obs}, ... }
+    stores: [], // [{ id, name, hora, scores: {P1...H3}, obs }]
+    s3: {},
+    feedback: { fortalezas: '', criticas: '', acciones: '', plan: '' },
+    completedAt: null,
+  };
+}
+
+// ============================================================
+//  COMPUTATIONS
+// ============================================================
+function avg(arr) {
+  const vals = arr.filter(v => v != null && v !== '');
+  if (!vals.length) return null;
+  return vals.reduce((a,b) => a + Number(b), 0) / vals.length;
+}
+
+function computeStoreAvg(store) {
+  const all = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].map(i => store.scores[i.code]);
+  return avg(all);
+}
+
+function computeSection2(ev) {
+  if (!ev.stores.length) return null;
+  const allScores = ev.stores.flatMap(s => [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].map(i => s.scores[i.code]));
+  return avg(allScores);
+}
+
+function computeS1Avg(ev) {
+  return avg(SECTION_1.map(i => ev.s1[i.code]?.score));
+}
+
+function computeS3Avg(ev) {
+  return avg(SECTION_3.map(i => ev.s3[i.code]?.score));
+}
+
+function computeFinalScore(ev) {
+  const s1 = computeS1Avg(ev) || 0;
+  const s2 = computeSection2(ev) || 0;
+  const s3 = computeS3Avg(ev) || 0;
+  // Each section: avg is 1-4. Convert to 0-100 proportionally then weight.
+  // The original formula: avg * weight_pct / 1 (since 4 = 100% conceptually it would be avg/4 * weight_pct * 100)
+  // Original sheet does: avg * weight (0.15) → e.g. 2.75 * 0.15 = 0.4125 then * scaling? Result was 68.12 with 2.75/2.79/2.5
+  // 2.75*0.15 = 0.4125; 2.79*0.65 = 1.81; 2.5*0.20 = 0.5; sum = 2.72. *25 = 68.1. So: (weighted_avg) * 25
+  const weighted = s1 * 0.15 + s2 * 0.65 + s3 * 0.20;
+  return weighted * 25;
+}
+
+function scoreBadge(score) {
+  if (score >= 90) return { lvl: 'EXCELENTE', cls: 'excelente', msg: 'Referente del equipo' };
+  if (score >= 75) return { lvl: 'BUENO', cls: 'bueno', msg: 'Cumple el estándar' };
+  if (score >= 60) return { lvl: 'ACEPTABLE', cls: 'aceptable', msg: 'Requiere mejora' };
+  return { lvl: 'DEFICIENTE', cls: 'deficiente', msg: 'Plan inmediato' };
+}
+
+function avgLevel(avg) {
+  if (avg == null) return { tag: '—', cls: '' };
+  if (avg >= 3.5) return { tag: 'Excelente', cls: 'tag-exc' };
+  if (avg >= 2.7) return { tag: 'Bueno', cls: 'tag-bue' };
+  if (avg >= 2.0) return { tag: 'Aceptable', cls: 'tag-acp' };
+  return { tag: 'Deficiente', cls: 'tag-def' };
+}
+
+// ============================================================
+//  GOOGLE SHEETS SYNC
+// ============================================================
+const GSHEETS_KEY = 'epv-gsheets-url-v1';
+
+async function getGSheetsUrl() {
+  try {
+    const r = await window.storage.get(GSHEETS_KEY, true);
+    return r ? r.value : '';
+  } catch { return ''; }
+}
+
+async function setGSheetsUrl(url) {
+  try { await window.storage.set(GSHEETS_KEY, url, true); } catch (e) { console.error(e); }
+}
+
+function flattenEvaluation(ev) {
+  // Convert one evaluation to multiple rows (one row per item) for Google Sheets
+  const s1 = computeS1Avg(ev) || 0;
+  const s2 = computeSection2(ev) || 0;
+  const s3 = computeS3Avg(ev) || 0;
+  const final = computeFinalScore(ev);
+  const badge = scoreBadge(final);
+  const rows = [];
+  const common = {
+    eval_id: ev.id,
+    fecha: ev.info.fecha,
+    vendedor: ev.info.vendedor,
+    evaluador: ev.info.evaluador,
+    ruta: ev.info.ruta,
+    periodo: ev.info.periodo,
+    visita: ev.info.visita,
+    puntaje_final: final.toFixed(2),
+    nivel: badge.lvl,
+    tiendas_evaluadas: ev.stores.length,
+    s1_promedio: s1.toFixed(2),
+    s2_promedio: s2.toFixed(2),
+    s3_promedio: s3.toFixed(2),
+    fortalezas: ev.feedback.fortalezas,
+    areas_criticas: ev.feedback.criticas,
+    acciones_inmediatas: ev.feedback.acciones,
+    plan_2_semanas: ev.feedback.plan,
+    enviado_en: new Date().toISOString(),
+  };
+
+  // Section 1 rows
+  SECTION_1.forEach(i => {
+    rows.push({ ...common, seccion: 'Pre-Ruta', codigo: i.code, criterio: i.name, cliente: '', puntaje: ev.s1[i.code]?.score || '', observacion: ev.s1[i.code]?.obs || '' });
+  });
+  // En-Ruta rows (one per item per store)
+  ev.stores.forEach(st => {
+    [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].forEach(it => {
+      rows.push({ ...common, seccion: 'En-Ruta', codigo: it.code, criterio: it.name, cliente: st.name, puntaje: st.scores[it.code] || '', observacion: st.obs || '' });
+    });
+  });
+  // Section 3 rows
+  SECTION_3.forEach(i => {
+    rows.push({ ...common, seccion: 'Post-Ruta', codigo: i.code, criterio: i.name, cliente: '', puntaje: ev.s3[i.code]?.score || '', observacion: ev.s3[i.code]?.obs || '' });
+  });
+  return rows;
+}
+
+async function syncToGoogleSheets() {
+  const url = await getGSheetsUrl();
+  if (!url) {
+    const inputUrl = prompt('Pega la URL del Web App de Google Apps Script (la primera vez):');
+    if (!inputUrl || !inputUrl.startsWith('https://script.google.com')) {
+      toast('URL inválida. Revisa las instrucciones.');
+      return;
+    }
+    await setGSheetsUrl(inputUrl);
+    return syncToGoogleSheets();
+  }
+
+  const ev = state.current;
+  const rows = flattenEvaluation(ev);
+  toast('Enviando a Google Sheets…');
+  try {
+    // Apps Script web apps don't support CORS preflight; use text/plain to avoid it
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'append', rows }),
+    });
+    toast('✓ Enviado a Google Sheets');
+  } catch (e) {
+    console.error(e);
+    toast('Error al enviar. Revisa la URL.');
+  }
+}
+
+async function changeGSheetsUrl() {
+  const current = await getGSheetsUrl();
+  const inputUrl = prompt('URL del Web App de Google Apps Script:', current);
+  if (inputUrl === null) return;
+  if (!inputUrl.startsWith('https://script.google.com')) {
+    toast('URL inválida');
+    return;
+  }
+  await setGSheetsUrl(inputUrl);
+  toast('URL guardada ✓');
+}
+
+async function syncAllToGoogleSheets() {
+  const url = await getGSheetsUrl();
+  if (!url) {
+    const inputUrl = prompt('Pega la URL del Web App de Google Apps Script:');
+    if (!inputUrl || !inputUrl.startsWith('https://script.google.com')) {
+      toast('URL inválida');
+      return;
+    }
+    await setGSheetsUrl(inputUrl);
+    return syncAllToGoogleSheets();
+  }
+  if (!state.history.length) { toast('No hay evaluaciones'); return; }
+  if (!confirm(`Enviar ${state.history.length} evaluaciones a Google Sheets? Las duplicadas se agregarán de nuevo.`)) return;
+
+  toast('Enviando…');
+  const allRows = [];
+  state.history.forEach(ev => allRows.push(...flattenEvaluation(ev)));
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'append', rows: allRows }),
+    });
+    toast(`✓ ${state.history.length} evaluaciones enviadas`);
+  } catch (e) {
+    console.error(e);
+    toast('Error al enviar');
+  }
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+const $ = (sel) => document.querySelector(sel);
+const main = () => $('#main');
+
+// Escape for use inside HTML attribute values (value="...", placeholder="...")
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function setActiveNav() {
+  $('#navHome').classList.toggle('active', state.view === 'home' || state.view.startsWith('step') || state.view === 'dashboard');
+  $('#navHist').classList.toggle('active', state.view === 'history');
+}
+
+function goHome() {
+  state.view = 'home';
+  state.current = null;
+  renderHome();
+}
+
+function goHistory() {
+  state.view = 'history';
+  state.current = null;
+  renderHistory();
+}
+
+function startEvaluation() {
+  const info = {
+    vendedor: $('#in-vendedor').value.trim(),
+    evaluador: $('#in-evaluador').value.trim(),
+    ruta: $('#in-ruta').value.trim(),
+    periodo: $('#in-periodo').value.trim(),
+    fecha: $('#in-fecha').value,
+    visita: $('#in-visita').value.trim(),
+  };
+  if (!info.vendedor || !info.evaluador) {
+    toast('Vendedor y evaluador son obligatorios');
+    return;
+  }
+  state.current = newEvaluation();
+  state.current.info = info;
+  state.view = 'step1';
+  renderStep1();
+}
+
+// ----- HOME -----
+function renderHome() {
+  setActiveNav();
+  const today = new Date().toISOString().slice(0, 10);
+  main().innerHTML = `
+    <section class="hero">
+      <div class="hero-eyebrow">Modelo de Coaching Comercial · 2026</div>
+      <h1 class="display">Evaluación de <em>vendedor en ruta</em>, sin papeles.</h1>
+      <p>3 momentos guiados: pre-ruta, en-ruta y post-ruta. Califica con un toque, agrega observaciones, y al cerrar obtienes el dashboard con diagnóstico y plan de coaching listo para entregar.</p>
+    </section>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="num blue">15<small style="font-size:.5em">%</small></div>
+        <div class="label">Pre-Ruta</div>
+        <div class="desc">Planeación y preparación · 4 ítems</div>
+      </div>
+      <div class="info-card">
+        <div class="num orange">65<small style="font-size:.5em">%</small></div>
+        <div class="label">En-Ruta</div>
+        <div class="desc">17 ítems × tiendas acompañadas</div>
+      </div>
+      <div class="info-card">
+        <div class="num green">20<small style="font-size:.5em">%</small></div>
+        <div class="label">Post-Ruta</div>
+        <div class="desc">Productividad y orden · 4 ítems</div>
+      </div>
+    </div>
+
+    <div class="start-card">
+      <h2>Nueva evaluación</h2>
+      <div class="form-grid">
+        <div class="field"><label>Vendedor *</label><input id="in-vendedor" placeholder="Nombre del vendedor" /></div>
+        <div class="field"><label>Evaluador *</label><input id="in-evaluador" placeholder="Tu nombre (supervisor)" /></div>
+        <div class="field"><label>Ruta</label><input id="in-ruta" placeholder="Ej. Ruta Norte 03" /></div>
+        <div class="field"><label>Período</label><input id="in-periodo" placeholder="Ej. Mayo 2026" /></div>
+        <div class="field"><label>Fecha</label><input id="in-fecha" type="date" value="${today}" /></div>
+        <div class="field"><label>Visita N°</label><input id="in-visita" placeholder="Número de acompañamiento" /></div>
+      </div>
+      <button class="start-btn" onclick="startEvaluation()">
+        Iniciar evaluación
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  `;
+}
+
+// ----- STEPPER -----
+function stepperHTML(active) {
+  const steps = [
+    { k: 1, label: 'Pre-Ruta' },
+    { k: 2, label: 'En-Ruta' },
+    { k: 3, label: 'Post-Ruta' },
+    { k: 4, label: 'Resultados' },
+  ];
+  return `<div class="stepper">${steps.map((s, i) => `
+    <div class="step ${active === s.k ? 'active' : (active > s.k ? 'done' : '')}">
+      <div class="step-num">${active > s.k ? '✓' : s.k}</div>
+      <span class="step-label">${s.label}</span>
+    </div>
+    ${i < 3 ? '<div class="step-sep"></div>' : ''}
+  `).join('')}</div>`;
+}
+
+// ----- SCALE BUTTONS -----
+function scaleHTML(currentValue, handlerName, code) {
+  return `<div class="scale">
+    ${[1,2,3,4].map(n => `
+      <button class="scale-btn s${n} ${currentValue === n ? 'selected' : ''}" onclick="${handlerName}('${code}', ${n})">
+        <span class="scale-num">${n}</span>
+        <span class="scale-lbl">${SCALE_LABELS[n]}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+
+// Variant for store scoring which needs an index argument too
+function scaleHTMLStore(currentValue, idx, code) {
+  return `<div class="scale">
+    ${[1,2,3,4].map(n => `
+      <button class="scale-btn s${n} ${currentValue === n ? 'selected' : ''}" onclick="setStoreScore(${idx}, '${code}', ${n})">
+        <span class="scale-num">${n}</span>
+        <span class="scale-lbl">${SCALE_LABELS[n]}</span>
+      </button>
+    `).join('')}
+  </div>`;
+}
+
+// ----- STEP 1 (PRE-RUTA) -----
+function renderStep1() {
+  state.view = 'step1';
+  setActiveNav();
+  const ev = state.current;
+  const answered = SECTION_1.filter(i => ev.s1[i.code]?.score).length;
+  const progress = (answered / SECTION_1.length) * 100;
+
+  main().innerHTML = `
+    ${stepperHTML(1)}
+    <div class="progress-bar"><div style="width:${progress}%"></div></div>
+    <div class="section-banner blue">
+      <div class="tag">🔵 Pre-Ruta · 15%</div>
+      <h2>Planeación y Preparación</h2>
+      <div class="meta">${esc(ev.info.vendedor)} · ${esc(ev.info.fecha)} · Antes de salir a campo</div>
+    </div>
+
+    ${SECTION_1.map(item => `
+      <div class="question">
+        <div class="q-head">
+          <span class="q-code">${item.code}</span>
+          <div class="q-body">
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+          </div>
+        </div>
+        ${scaleHTML(ev.s1[item.code]?.score, 'setS1', item.code)}
+        <input class="obs-input" placeholder="Observación (opcional)…"
+               value="${esc(ev.s1[item.code]?.obs)}"
+               onchange="setS1Obs('${item.code}', this.value)" />
+      </div>
+    `).join('')}
+
+    <div class="nav-row">
+      <button class="nav-btn back" onclick="goHome()">Cancelar</button>
+      <button class="nav-btn next" onclick="renderStep2()" ${answered < SECTION_1.length ? 'disabled' : ''}>
+        Continuar a En-Ruta →
+      </button>
+    </div>
+  `;
+}
+
+function setS1(code, val) {
+  if (!state.current.s1[code]) state.current.s1[code] = { score: null, obs: '' };
+  state.current.s1[code].score = val;
+  renderStep1();
+}
+function setS1Obs(code, val) {
+  if (!state.current.s1[code]) state.current.s1[code] = { score: null, obs: '' };
+  state.current.s1[code].obs = val;
+}
+
+// ----- STEP 2 (EN-RUTA) -----
+function renderStep2() {
+  state.view = 'step2';
+  setActiveNav();
+  const ev = state.current;
+
+  main().innerHTML = `
+    ${stepperHTML(2)}
+    <div class="section-banner orange">
+      <div class="tag">🟠 En-Ruta · 65%</div>
+      <h2>Ejecución por Tienda</h2>
+      <div class="meta">17 ítems por tienda · Acompañamiento de muestra (recomendado: 15 tiendas)</div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>9 pasos de la visita</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>Portafolio aplicado (5)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#6b3d8c"></span>Habilidades blandas (3)</div>
+    </div>
+
+    <div class="store-list">
+      ${ev.stores.map((s, idx) => {
+        const a = computeStoreAvg(s);
+        const filled = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].filter(i => s.scores[i.code] != null).length;
+        const complete = filled === 17;
+        return `
+          <div class="store-card ${complete ? 'complete' : ''}" onclick="openStore(${idx})">
+            <div class="store-info">
+              <div class="store-num">${idx + 1}</div>
+              <div class="store-text">
+                <div class="store-name">${esc(s.name) || 'Tienda ' + (idx+1)}</div>
+                <div class="store-meta">${s.hora ? esc(s.hora) + ' · ' : ''}${filled}/17 ítems${complete ? ' · Completa' : ''}</div>
+              </div>
+            </div>
+            <div class="store-score">${a != null ? a.toFixed(2) : '—'}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <button class="add-store-btn" onclick="addStore()">+ Agregar tienda</button>
+
+    <div class="nav-row">
+      <button class="nav-btn back" onclick="renderStep1()">← Atrás</button>
+      <button class="nav-btn next" onclick="renderStep3()" ${ev.stores.length === 0 ? 'disabled' : ''}>
+        Continuar a Post-Ruta →
+      </button>
+    </div>
+  `;
+}
+
+function addStore() {
+  state.current.stores.push({
+    id: 'st_' + Date.now(),
+    name: '',
+    hora: '',
+    scores: {},
+    obs: '',
+  });
+  state.editingStore = state.current.stores.length - 1;
+  openStoreModal();
+}
+
+function openStore(idx) {
+  state.editingStore = idx;
+  openStoreModal();
+}
+
+function openStoreModal() {
+  const idx = state.editingStore;
+  const s = state.current.stores[idx];
+
+  const modal = $('#modalContent');
+  modal.innerHTML = `
+    <div class="modal-head">
+      <h2>Tienda ${idx + 1}</h2>
+      <button class="close-btn" onclick="closeStoreModal()">✕</button>
+    </div>
+
+    <div class="form-grid" style="margin-bottom:18px">
+      <div class="field"><label>Cliente / Tienda</label>
+        <input id="st-name" value="${esc(s.name)}" placeholder="Nombre o código" onchange="state.current.stores[${idx}].name = this.value" />
+      </div>
+      <div class="field"><label>Hora visita</label>
+        <input id="st-hora" type="time" value="${esc(s.hora)}" onchange="state.current.stores[${idx}].hora = this.value" />
+      </div>
+    </div>
+
+    <div class="block-title blue">🔵 Ejecución · 9 pasos de la visita</div>
+    ${PASOS_9.map(p => storeQ(idx, p)).join('')}
+
+    <div class="block-title yellow">🟡 Portafolio aplicado · ¿ofreció estos proveedores?</div>
+    ${PORTAFOLIO.map(p => storeQ(idx, p, 'portafolio')).join('')}
+
+    <div class="block-title purple">🟣 Habilidades blandas</div>
+    ${HABILIDADES.map(p => storeQ(idx, p)).join('')}
+
+    <div style="margin-top:14px">
+      <label style="font-size:12px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;font-weight:500">Observaciones del coaching (esta tienda)</label>
+      <textarea class="obs-input" style="margin-top:6px;min-height:60px" onchange="state.current.stores[${idx}].obs = this.value" placeholder="Frases textuales del tendero, momentos clave, etc.">${esc(s.obs)}</textarea>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn danger" onclick="deleteStore(${idx})">Eliminar</button>
+      <button class="nav-btn next" onclick="closeStoreModal()">Guardar tienda</button>
+    </div>
+  `;
+  $('#modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function storeQ(idx, item, kind) {
+  const s = state.current.stores[idx];
+  const v = s.scores[item.code];
+  const desc = item.desc ? `<p>${item.desc}</p>` : (kind === 'portafolio' ? `<p>¿Ofreció ${item.name} a esta tienda según su perfil?</p>` : '');
+  return `
+    <div class="question">
+      <div class="q-head">
+        <span class="q-code">${item.code}</span>
+        <div class="q-body">
+          <h3>${item.name}</h3>
+          ${desc}
+        </div>
+      </div>
+      ${scaleHTMLStore(v, idx, item.code)}
+    </div>
+  `;
+}
+
+function setStoreScore(idx, code, val) {
+  state.current.stores[idx].scores[code] = val;
+  openStoreModal();  // re-render to show selection
+}
+
+function deleteStore(idx) {
+  if (!confirm('¿Eliminar esta tienda?')) return;
+  state.current.stores.splice(idx, 1);
+  closeStoreModal();
+}
+
+function closeStoreModal() {
+  $('#modal').classList.remove('show');
+  document.body.style.overflow = '';
+  state.editingStore = null;
+  renderStep2();
+}
+
+// ----- STEP 3 (POST-RUTA) -----
+function renderStep3() {
+  state.view = 'step3';
+  setActiveNav();
+  const ev = state.current;
+  const answered = SECTION_3.filter(i => ev.s3[i.code]?.score).length;
+  const progress = (answered / SECTION_3.length) * 100;
+
+  main().innerHTML = `
+    ${stepperHTML(3)}
+    <div class="progress-bar"><div style="width:${progress}%"></div></div>
+    <div class="section-banner green">
+      <div class="tag">🟢 Post-Ruta · 20%</div>
+      <h2>Productividad y Orden</h2>
+      <div class="meta">Manejo del día completo · Horario, cumplimiento, procesos</div>
+    </div>
+
+    ${SECTION_3.map(item => `
+      <div class="question">
+        <div class="q-head">
+          <span class="q-code">${item.code}</span>
+          <div class="q-body">
+            <h3>${item.name}</h3>
+            <p>${item.desc}</p>
+          </div>
+        </div>
+        ${scaleHTML(ev.s3[item.code]?.score, 'setS3', item.code)}
+        <input class="obs-input" placeholder="Observación (opcional)…"
+               value="${esc(ev.s3[item.code]?.obs)}"
+               onchange="setS3Obs('${item.code}', this.value)" />
+      </div>
+    `).join('')}
+
+    <div class="nav-row">
+      <button class="nav-btn back" onclick="renderStep2()">← Atrás</button>
+      <button class="nav-btn next" onclick="finishEvaluation()" ${answered < SECTION_3.length ? 'disabled' : ''}>
+        Ver resultados →
+      </button>
+    </div>
+  `;
+}
+
+function setS3(code, val) {
+  if (!state.current.s3[code]) state.current.s3[code] = { score: null, obs: '' };
+  state.current.s3[code].score = val;
+  renderStep3();
+}
+function setS3Obs(code, val) {
+  if (!state.current.s3[code]) state.current.s3[code] = { score: null, obs: '' };
+  state.current.s3[code].obs = val;
+}
+
+// ----- DASHBOARD -----
+async function finishEvaluation() {
+  const ev = state.current;
+  ev.completedAt = new Date().toISOString();
+  // Add to history (only once)
+  const existing = state.history.findIndex(h => h.id === ev.id);
+  if (existing >= 0) state.history[existing] = ev;
+  else state.history.unshift(ev);
+  await saveHistory();
+  renderDashboard(ev);
+}
+
+function renderDashboard(ev) {
+  state.view = 'dashboard';
+  state.current = ev;
+  setActiveNav();
+
+  const s1 = computeS1Avg(ev) || 0;
+  const s2 = computeSection2(ev) || 0;
+  const s3 = computeS3Avg(ev) || 0;
+  const final = computeFinalScore(ev);
+  const badge = scoreBadge(final);
+
+  // Dimension averages
+  const pasosScores = ev.stores.flatMap(st => PASOS_9.map(p => st.scores[p.code]));
+  const portScores = ev.stores.flatMap(st => PORTAFOLIO.map(p => st.scores[p.code]));
+  const habScores = ev.stores.flatMap(st => HABILIDADES.map(p => st.scores[p.code]));
+  const pasosAvg = avg(pasosScores);
+  const portAvg = avg(portScores);
+  const habAvg = avg(habScores);
+
+  // Per-paso averages
+  const pasoAvgs = PASOS_9.map(p => ({
+    ...p,
+    avg: avg(ev.stores.map(s => s.scores[p.code]))
+  }));
+
+  main().innerHTML = `
+    ${stepperHTML(4)}
+
+    <div class="dash-hero">
+      <div class="dash-hero-top">
+        <div>
+          <div class="label">Puntaje final ponderado</div>
+        </div>
+        <div class="badge ${badge.cls}">${badge.lvl}</div>
+      </div>
+      <div class="score-big">${final.toFixed(1)}<sup>/100</sup></div>
+      <div class="dash-hero-meta">
+        <span><strong>${esc(ev.info.vendedor)}</strong> · vendedor</span>
+        <span><strong>${esc(ev.info.evaluador)}</strong> · evaluador</span>
+        <span><strong>${esc(ev.info.fecha)}</strong> · ${esc(ev.info.ruta) || 'sin ruta'}</span>
+        <span><strong>${ev.stores.length}</strong> tiendas acompañadas</span>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-card s1">
+        <div class="head"><span class="name">Planeación</span><span class="weight">15%</span></div>
+        <div class="val">${s1.toFixed(2)}</div>
+        <div class="out">de 4.00 · aporta ${(s1 * 0.15 * 25).toFixed(1)} pts</div>
+        <div class="bar"><div style="width:${(s1/4)*100}%"></div></div>
+      </div>
+      <div class="dash-card s2">
+        <div class="head"><span class="name">Ejecución por cliente</span><span class="weight">65%</span></div>
+        <div class="val">${s2.toFixed(2)}</div>
+        <div class="out">de 4.00 · aporta ${(s2 * 0.65 * 25).toFixed(1)} pts</div>
+        <div class="bar"><div style="width:${(s2/4)*100}%"></div></div>
+      </div>
+      <div class="dash-card s3">
+        <div class="head"><span class="name">Productividad</span><span class="weight">20%</span></div>
+        <div class="val">${s3.toFixed(2)}</div>
+        <div class="out">de 4.00 · aporta ${(s3 * 0.20 * 25).toFixed(1)} pts</div>
+        <div class="bar"><div style="width:${(s3/4)*100}%"></div></div>
+      </div>
+    </div>
+
+    <div class="diag-section">
+      <h3>Diagnóstico por dimensión (Sección 2)</h3>
+      <div class="diag-grid">
+        ${[
+          { name: '🔵 Ejecución (9 pasos)', avg: pasosAvg, sub: 'P1 a P9 del modelo de visita' },
+          { name: '🟡 Portafolio Aplicado', avg: portAvg, sub: '5 proveedores top: ALICORP, JW, CONFITECA, DISPACIFIC, SOFTYS' },
+          { name: '🟣 Habilidades Blandas', avg: habAvg, sub: 'Argumentación, resolución, negociación' },
+        ].map(d => {
+          const lv = avgLevel(d.avg);
+          return `<div class="diag-row">
+            <div class="lbl">${d.name}<small>${d.sub}</small></div>
+            <div class="val">${d.avg != null ? d.avg.toFixed(2) : '—'}</div>
+            <div class="tag ${lv.cls}">${lv.tag}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="diag-section">
+      <h3>Promedio por paso de la visita</h3>
+      <div class="pasos-chart">
+        ${pasoAvgs.map(p => {
+          const lv = p.avg ? Math.round(p.avg) : 0;
+          return `<div class="paso-bar" title="${p.name}: ${p.avg != null ? p.avg.toFixed(2) : '—'}">
+            <div class="paso-bar-fill lv${lv}"><div></div></div>
+            <div class="paso-bar-lbl">${p.code}</div>
+            <div class="paso-bar-name">${p.name}</div>
+            <div class="paso-bar-val">${p.avg != null ? p.avg.toFixed(1) : '—'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="feedback-section">
+      <h3>Retroalimentación estructurada</h3>
+      <div class="fb-block">
+        <label>🌟 Fortalezas observadas</label>
+        <textarea onchange="state.current.feedback.fortalezas = this.value">${esc(ev.feedback.fortalezas)}</textarea>
+      </div>
+      <div class="fb-block">
+        <label>⚠️ Áreas críticas de mejora</label>
+        <textarea onchange="state.current.feedback.criticas = this.value">${esc(ev.feedback.criticas)}</textarea>
+      </div>
+      <div class="fb-block">
+        <label>⚡ Acciones inmediatas (próxima ruta)</label>
+        <textarea onchange="state.current.feedback.acciones = this.value">${esc(ev.feedback.acciones)}</textarea>
+      </div>
+      <div class="fb-block">
+        <label>📅 Plan a 2 semanas</label>
+        <textarea onchange="state.current.feedback.plan = this.value">${esc(ev.feedback.plan)}</textarea>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="action-btn primary" onclick="saveFeedback()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+        Guardar retroalimentación
+      </button>
+      <button class="action-btn green" onclick="syncToGoogleSheets()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 12l3-3m-3 3l3 3"/></svg>
+        Enviar a Google Sheets
+      </button>
+      <button class="action-btn outline" onclick="exportSingle()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
+        Exportar Excel
+      </button>
+      <button class="action-btn outline" onclick="window.print()">
+        🖨️ Imprimir
+      </button>
+      <button class="action-btn outline" onclick="goHome()">
+        Nueva evaluación
+      </button>
+    </div>
+  `;
+}
+
+async function saveFeedback() {
+  const existing = state.history.findIndex(h => h.id === state.current.id);
+  if (existing >= 0) state.history[existing] = state.current;
+  await saveHistory();
+  toast('Guardado ✓');
+}
+
+// ----- HISTORY -----
+function renderHistory() {
+  setActiveNav();
+  const items = state.history;
+
+  main().innerHTML = `
+    <section class="hero" style="padding:20px 0">
+      <div class="hero-eyebrow">Acumulado de evaluaciones</div>
+      <h1 class="display" style="font-size:42px">Historial</h1>
+      <p>${items.length} ${items.length === 1 ? 'evaluación registrada' : 'evaluaciones registradas'} · datos compartidos entre supervisores</p>
+    </section>
+
+    ${items.length > 0 ? `
+      <div class="actions-row" style="margin-bottom:20px">
+        <button class="action-btn green" onclick="syncAllToGoogleSheets()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 12l3-3m-3 3l3 3"/></svg>
+          Enviar todo a Google Sheets
+        </button>
+        <button class="action-btn outline" onclick="exportAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
+          Exportar Excel
+        </button>
+        <button class="action-btn outline" onclick="clearHistory()" style="flex:0 0 auto">
+          Vaciar historial
+        </button>
+      </div>
+    ` : ''}
+
+    <div class="history-list">
+      ${items.length === 0 ? `
+        <div class="empty">
+          <div class="display">Sin evaluaciones todavía</div>
+          <p>Comienza una nueva evaluación desde el inicio.</p>
+        </div>
+      ` : items.map(ev => {
+        const score = computeFinalScore(ev);
+        const badge = scoreBadge(score);
+        return `
+          <div class="hist-card">
+            <div class="hist-score" style="color:var(--${badge.cls === 'excelente' ? 'green' : badge.cls === 'bueno' ? 'blue' : badge.cls === 'aceptable' ? 'yellow' : 'red'})">${score.toFixed(1)}</div>
+            <div class="hist-info">
+              <div class="name">${esc(ev.info.vendedor)} <span style="font-weight:400;color:var(--ink-soft);font-size:13px">· ${esc(ev.info.ruta) || '—'}</span></div>
+              <div class="meta">${esc(ev.info.fecha)} · evaluado por ${esc(ev.info.evaluador)} · ${ev.stores.length} tiendas · <span class="tag-${badge.cls}" style="font-weight:600">${badge.lvl}</span></div>
+            </div>
+            <div class="hist-actions">
+              <button class="hist-btn" title="Ver dashboard" onclick="viewHist('${ev.id}')">👁</button>
+              <button class="hist-btn" title="Exportar" onclick="exportHist('${ev.id}')">⬇</button>
+              <button class="hist-btn danger" title="Eliminar" onclick="deleteHist('${ev.id}')">🗑</button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function viewHist(id) {
+  const ev = state.history.find(h => h.id === id);
+  if (ev) renderDashboard(JSON.parse(JSON.stringify(ev)));
+}
+
+async function deleteHist(id) {
+  if (!confirm('¿Eliminar esta evaluación del historial?')) return;
+  state.history = state.history.filter(h => h.id !== id);
+  await saveHistory();
+  renderHistory();
+}
+
+async function clearHistory() {
+  if (!confirm('¿Vaciar TODO el historial? Esta acción no se puede deshacer.')) return;
+  state.history = [];
+  await saveHistory();
+  renderHistory();
+}
+
+// ============================================================
+//  EXCEL EXPORT
+// ============================================================
+function buildEvalSheets(ev) {
+  // Sheet 1: Resumen
+  const s1 = computeS1Avg(ev) || 0;
+  const s2 = computeSection2(ev) || 0;
+  const s3 = computeS3Avg(ev) || 0;
+  const final = computeFinalScore(ev);
+  const badge = scoreBadge(final);
+
+  const resumen = [
+    ['EVALUACIÓN DE PERSONAL DE VENTAS (EPV)'],
+    [],
+    ['Vendedor', ev.info.vendedor],
+    ['Evaluador', ev.info.evaluador],
+    ['Ruta', ev.info.ruta],
+    ['Período', ev.info.periodo],
+    ['Fecha', ev.info.fecha],
+    ['Visita N°', ev.info.visita],
+    ['Tiendas acompañadas', ev.stores.length],
+    [],
+    ['SECCIÓN', 'PESO', 'PROMEDIO', 'APORTE'],
+    ['1. Planeación y Preparación', '15%', s1.toFixed(2), (s1 * 0.15 * 25).toFixed(2)],
+    ['2. Ejecución Integral por Cliente', '65%', s2.toFixed(2), (s2 * 0.65 * 25).toFixed(2)],
+    ['3. Productividad y Orden', '20%', s3.toFixed(2), (s3 * 0.20 * 25).toFixed(2)],
+    [],
+    ['PUNTAJE FINAL', '', '', final.toFixed(2)],
+    ['NIVEL', '', '', badge.lvl + ' — ' + badge.msg],
+    [],
+    ['RETROALIMENTACIÓN'],
+    ['Fortalezas', ev.feedback.fortalezas],
+    ['Áreas críticas', ev.feedback.criticas],
+    ['Acciones inmediatas', ev.feedback.acciones],
+    ['Plan a 2 semanas', ev.feedback.plan],
+  ];
+
+  // Sheet 2: Pre-Ruta
+  const pre = [['Código', 'Criterio', 'Puntaje', 'Observación']];
+  SECTION_1.forEach(i => pre.push([i.code, i.name, ev.s1[i.code]?.score || '', ev.s1[i.code]?.obs || '']));
+
+  // Sheet 3: Por Cliente (matrix)
+  const allItems = [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES];
+  const header = ['#', 'Cliente', 'Hora', ...allItems.map(i => i.code), 'PROM', 'Observaciones'];
+  const porCliente = [header];
+  ev.stores.forEach((s, i) => {
+    const row = [i + 1, s.name, s.hora, ...allItems.map(it => s.scores[it.code] || ''), computeStoreAvg(s)?.toFixed(2) || '', s.obs || ''];
+    porCliente.push(row);
+  });
+  // Averages row
+  const avgRow = ['', 'PROMEDIO POR ÍTEM', '', ...allItems.map(it => {
+    const a = avg(ev.stores.map(s => s.scores[it.code]));
+    return a != null ? a.toFixed(2) : '';
+  }), s2.toFixed(2), ''];
+  porCliente.push(avgRow);
+
+  // Sheet 4: Post-Ruta
+  const post = [['Código', 'Criterio', 'Puntaje', 'Observación']];
+  SECTION_3.forEach(i => post.push([i.code, i.name, ev.s3[i.code]?.score || '', ev.s3[i.code]?.obs || '']));
+
+  return { resumen, pre, porCliente, post };
+}
+
+function exportSingle() {
+  const ev = state.current;
+  const sheets = buildEvalSheets(ev);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheets.resumen), 'Resumen');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheets.pre), 'Pre-Ruta');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheets.porCliente), 'Por Cliente');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sheets.post), 'Post-Ruta');
+
+  const safe = (s) => (s || 'sin').replace(/[^a-z0-9]/gi, '_');
+  const fname = `EPV_${safe(ev.info.vendedor)}_${ev.info.fecha}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  toast('Excel descargado');
+}
+
+function exportHist(id) {
+  const ev = state.history.find(h => h.id === id);
+  if (!ev) return;
+  state.current = ev;
+  exportSingle();
+}
+
+function exportAll() {
+  if (!state.history.length) { toast('No hay evaluaciones para exportar'); return; }
+  const wb = XLSX.utils.book_new();
+
+  // Consolidado (one row per evaluation)
+  const cons = [['Fecha', 'Vendedor', 'Evaluador', 'Ruta', 'Período', 'Visita', 'Tiendas', 'S1 (Plan)', 'S2 (Ejec)', 'S3 (Prod)', 'Puntaje Final', 'Nivel']];
+  state.history.forEach(ev => {
+    const s1 = computeS1Avg(ev) || 0;
+    const s2 = computeSection2(ev) || 0;
+    const s3 = computeS3Avg(ev) || 0;
+    const final = computeFinalScore(ev);
+    const badge = scoreBadge(final);
+    cons.push([ev.info.fecha, ev.info.vendedor, ev.info.evaluador, ev.info.ruta, ev.info.periodo, ev.info.visita,
+               ev.stores.length, s1.toFixed(2), s2.toFixed(2), s3.toFixed(2), final.toFixed(2), badge.lvl]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cons), 'Consolidado');
+
+  // Detalle por ítem (long format - one row per item per evaluation)
+  const detalle = [['Fecha', 'Vendedor', 'Sección', 'Código', 'Criterio', 'Cliente', 'Puntaje', 'Observación']];
+  state.history.forEach(ev => {
+    SECTION_1.forEach(i => detalle.push([ev.info.fecha, ev.info.vendedor, 'Pre-Ruta', i.code, i.name, '', ev.s1[i.code]?.score || '', ev.s1[i.code]?.obs || '']));
+    ev.stores.forEach(st => {
+      [...PASOS_9, ...PORTAFOLIO, ...HABILIDADES].forEach(it => {
+        detalle.push([ev.info.fecha, ev.info.vendedor, 'En-Ruta', it.code, it.name, st.name, st.scores[it.code] || '', st.obs || '']);
+      });
+    });
+    SECTION_3.forEach(i => detalle.push([ev.info.fecha, ev.info.vendedor, 'Post-Ruta', i.code, i.name, '', ev.s3[i.code]?.score || '', ev.s3[i.code]?.obs || '']));
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detalle), 'Detalle por ítem');
+
+  // Retroalimentaciones
+  const fb = [['Fecha', 'Vendedor', 'Evaluador', 'Fortalezas', 'Áreas críticas', 'Acciones inmediatas', 'Plan a 2 semanas']];
+  state.history.forEach(ev => {
+    fb.push([ev.info.fecha, ev.info.vendedor, ev.info.evaluador,
+             ev.feedback.fortalezas, ev.feedback.criticas, ev.feedback.acciones, ev.feedback.plan]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fb), 'Retroalimentaciones');
+
+  const today = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `EPV_Consolidado_${today}.xlsx`);
+  toast('Consolidado descargado');
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+(async function init() {
+  await loadHistory();
+  renderHome();
+})();
+</script>
+</body>
+</html>
