@@ -356,15 +356,32 @@ const STORAGE_KEY = 'epv-history-v1';
 const SHARED = true;
 
 async function loadHistory() {
+  // Try Claude.ai shared storage first, fall back to localStorage
   try {
-    const r = await window.storage.get(STORAGE_KEY, SHARED);
-    state.history = r ? JSON.parse(r.value) : [];
+    if (typeof window.storage !== 'undefined' && window.storage.get) {
+      const r = await window.storage.get(STORAGE_KEY, SHARED);
+      if (r && r.value) {
+        state.history = JSON.parse(r.value);
+        return;
+      }
+    }
+  } catch {}
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state.history = raw ? JSON.parse(raw) : [];
   } catch { state.history = []; }
 }
 
 async function saveHistory() {
-  try { await window.storage.set(STORAGE_KEY, JSON.stringify(state.history), SHARED); }
-  catch (e) { console.error('Save failed', e); }
+  // Save to both stores so it works in any environment
+  try {
+    if (typeof window.storage !== 'undefined' && window.storage.set) {
+      await window.storage.set(STORAGE_KEY, JSON.stringify(state.history), SHARED);
+    }
+  } catch (e) { console.error('Shared save failed', e); }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.history));
+  } catch (e) { console.error('Local save failed', e); }
 }
 
 function newEvaluation() {
@@ -442,13 +459,24 @@ const GSHEETS_KEY = 'epv-gsheets-url-v1';
 
 async function getGSheetsUrl() {
   try {
-    const r = await window.storage.get(GSHEETS_KEY, true);
-    return r ? r.value : '';
-  } catch { return ''; }
+    // Try modern Claude.ai shared storage first, fall back to localStorage
+    if (typeof window.storage !== 'undefined' && window.storage.get) {
+      const r = await window.storage.get(GSHEETS_KEY, true);
+      if (r && r.value) return r.value;
+    }
+    return localStorage.getItem(GSHEETS_KEY) || '';
+  } catch {
+    try { return localStorage.getItem(GSHEETS_KEY) || ''; } catch { return ''; }
+  }
 }
 
 async function setGSheetsUrl(url) {
-  try { await window.storage.set(GSHEETS_KEY, url, true); } catch (e) { console.error(e); }
+  try {
+    if (typeof window.storage !== 'undefined' && window.storage.set) {
+      await window.storage.set(GSHEETS_KEY, url, true);
+    }
+  } catch (e) { console.error(e); }
+  try { localStorage.setItem(GSHEETS_KEY, url); } catch (e) { console.error(e); }
 }
 
 function flattenEvaluation(ev) {
