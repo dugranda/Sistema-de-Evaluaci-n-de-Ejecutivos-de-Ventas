@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>EPV · Evaluación de Personal de Ventas</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -278,7 +281,7 @@
   <div class="brand">
     <div class="brand-mark">E</div>
     <div>
-      <div class="brand-name">Sistema EPV</div>
+      <div class="brand-name">Sistema EPV <span style="font-size:10px;font-weight:400;opacity:.5;letter-spacing:0">v1.2</span></div>
       <div class="brand-sub">Evaluación · Personal de Ventas</div>
     </div>
   </div>
@@ -471,12 +474,14 @@ async function getGSheetsUrl() {
 }
 
 async function setGSheetsUrl(url) {
+  // Save synchronously to localStorage first (most reliable)
+  try { localStorage.setItem(GSHEETS_KEY, url); } catch (e) { console.error('localStorage error:', e); }
+  // Also try Claude.ai shared storage if available
   try {
     if (typeof window.storage !== 'undefined' && window.storage.set) {
       await window.storage.set(GSHEETS_KEY, url, true);
     }
-  } catch (e) { console.error(e); }
-  try { localStorage.setItem(GSHEETS_KEY, url); } catch (e) { console.error(e); }
+  } catch (e) { console.error('window.storage error:', e); }
 }
 
 function flattenEvaluation(ev) {
@@ -1130,7 +1135,7 @@ function renderDashboard(ev) {
     <div class="actions-row">
       <button class="action-btn primary" onclick="saveFeedback()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
-        Guardar y enviar a Google Sheets
+        Guardar y enviar
       </button>
       <button class="action-btn outline" onclick="exportSingle()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M3 17v3a1 1 0 001 1h16a1 1 0 001-1v-3"/></svg>
@@ -1153,8 +1158,10 @@ async function saveFeedback() {
 
   // Auto-sync to Google Sheets if URL is configured
   const url = await getGSheetsUrl();
-  if (url) {
-    toast('Guardando y enviando…');
+  console.log('[EPV] URL al guardar:', url ? url.substring(0, 50) + '...' : '(vacía)');
+
+  if (url && url.startsWith('https://script.google.com')) {
+    toast('Enviando a Google Sheets…');
     const rows = flattenEvaluation(state.current);
     try {
       await fetch(url, {
@@ -1163,13 +1170,13 @@ async function saveFeedback() {
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'append', rows }),
       });
-      toast('✓ Guardado y enviado a Google Sheets');
+      toast('✓ Guardado y enviado');
     } catch (e) {
       console.error(e);
-      toast('Guardado local ✓ (error al enviar a Sheets)');
+      toast('Guardado local ✓ (error al enviar)');
     }
   } else {
-    toast('Guardado ✓ (configura Google Sheets con ⚙ para sincronizar)');
+    toast('Configura primero la URL con el ⚙ arriba');
   }
 }
 
