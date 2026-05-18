@@ -247,6 +247,28 @@
 
   .feedback-section { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; }
   .feedback-section h3 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 14px; }
+
+  /* ========== OBSERVATIONS SECTION ========== */
+  .obs-section { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+  .obs-section h3 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .obs-count { font-family: 'Geist', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); background: var(--bg); padding: 4px 10px; border-radius: 12px; }
+  .obs-block { margin-bottom: 18px; }
+  .obs-block:last-child { margin-bottom: 0; }
+  .obs-block-title { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid currentColor; }
+  .obs-block-title.blue { color: var(--blue); }
+  .obs-block-title.orange { color: var(--orange); }
+  .obs-block-title.green { color: var(--green); }
+  .obs-item { background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
+  .obs-item:last-child { margin-bottom: 0; }
+  .obs-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .obs-code { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: var(--ink-soft); padding: 2px 6px; background: var(--bg-card); border-radius: 4px; letter-spacing: 0.04em; }
+  .obs-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .obs-score { font-family: 'Fraunces', serif; font-weight: 600; font-size: 13px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; margin-left: auto; }
+  .obs-score.s1 { background: var(--red); }
+  .obs-score.s2 { background: var(--yellow); }
+  .obs-score.s3 { background: var(--blue); }
+  .obs-score.s4 { background: var(--green); }
+  .obs-text { font-size: 14px; line-height: 1.5; color: var(--ink); padding-left: 4px; border-left: 2px solid var(--line); padding: 4px 0 4px 10px; }
   .fb-block { margin-bottom: 14px; }
   .fb-block label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
   .fb-block textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 7px; font: inherit; font-size: 14px; background: var(--bg); resize: vertical; min-height: 64px; }
@@ -295,7 +317,7 @@
   <div class="brand">
     <div class="brand-mark">E</div>
     <div>
-      <div class="brand-name">Sistema EPV <span style="font-size:10px;font-weight:400;opacity:.5;letter-spacing:0">v1.3</span></div>
+      <div class="brand-name">Sistema EPV <span style="font-size:10px;font-weight:400;opacity:.5;letter-spacing:0">v1.4</span></div>
       <div class="brand-sub">Evaluación · Personal de Ventas</div>
     </div>
   </div>
@@ -1267,6 +1289,68 @@ function renderDashboard(ev) {
         }).join('')}
       </div>
     </div>
+
+    ${(() => {
+      // Build observations section: only show if there are any
+      const preObs = SECTION_1.filter(i => ev.s1[i.code]?.obs?.trim()).map(i => ({ code: i.code, name: i.name, obs: ev.s1[i.code].obs, score: ev.s1[i.code].score }));
+      const storeObs = ev.stores.filter(s => s.obs?.trim()).map((s, idx) => ({ idx: ev.stores.indexOf(s) + 1, name: s.name || 'Tienda ' + (ev.stores.indexOf(s)+1), obs: s.obs }));
+      const postObs = SECTION_3.filter(i => ev.s3[i.code]?.obs?.trim()).map(i => ({ code: i.code, name: i.name, obs: ev.s3[i.code].obs, score: ev.s3[i.code].score }));
+      const totalObs = preObs.length + storeObs.length + postObs.length;
+      if (totalObs === 0) return '';
+
+      return `
+        <div class="obs-section">
+          <h3>Observaciones recogidas <span class="obs-count">${totalObs} ${totalObs === 1 ? 'nota' : 'notas'}</span></h3>
+
+          ${preObs.length > 0 ? `
+            <div class="obs-block">
+              <div class="obs-block-title blue">🔵 Pre-Ruta · Planeación</div>
+              ${preObs.map(o => `
+                <div class="obs-item">
+                  <div class="obs-item-head">
+                    <span class="obs-code">${o.code}</span>
+                    <span class="obs-name">${esc(o.name)}</span>
+                    ${o.score ? `<span class="obs-score s${o.score}">${o.score}</span>` : ''}
+                  </div>
+                  <div class="obs-text">${esc(o.obs)}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          ${storeObs.length > 0 ? `
+            <div class="obs-block">
+              <div class="obs-block-title orange">🟠 En-Ruta · Notas por tienda</div>
+              ${storeObs.map(o => `
+                <div class="obs-item">
+                  <div class="obs-item-head">
+                    <span class="obs-code">T${o.idx}</span>
+                    <span class="obs-name">${esc(o.name)}</span>
+                  </div>
+                  <div class="obs-text">${esc(o.obs)}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          ${postObs.length > 0 ? `
+            <div class="obs-block">
+              <div class="obs-block-title green">🟢 Post-Ruta · Productividad</div>
+              ${postObs.map(o => `
+                <div class="obs-item">
+                  <div class="obs-item-head">
+                    <span class="obs-code">${o.code}</span>
+                    <span class="obs-name">${esc(o.name)}</span>
+                    ${o.score ? `<span class="obs-score s${o.score}">${o.score}</span>` : ''}
+                  </div>
+                  <div class="obs-text">${esc(o.obs)}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    })()}
 
     <div class="feedback-section">
       <h3>Retroalimentación estructurada</h3>
